@@ -16,13 +16,8 @@ add_executable(first_game
     src/main.cpp
 )
 
-# Link glfw
-find_package(glfw3 CONFIG REQUIRED)
-target_link_libraries(first_game PRIVATE glfw)
-
 # Include paths
 target_link_libraries(first_game PRIVATE thirdparty)
-
 
 # On Linux, you may also need to link these manually:
 if (UNIX AND NOT APPLE)
