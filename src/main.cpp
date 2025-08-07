@@ -1,15 +1,25 @@
-#include "glad/glad.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <string>
+#include <cstring>
+#include "Shape.hpp"
+#include <hexdump.hpp>
 
 using std::string;
 
 float vertices[] = {
-    -0.1f, -0.5f, 0.0f,
+    -0.5f, -0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
-     0.5f,  0.5f, 0.0f
+     0.5f,  0.5f, 0.0f,
+    -0.5f,  0.5f, 0.0f
 };
+
+unsigned int indices[] = {
+    0, 1, 2,
+    2, 3, 0,
+};
+
 const char *vertexShaderSource =
 "#version 460 core\n"
 "layout (location = 0) in vec3 aPos;\n"
@@ -29,7 +39,6 @@ const char *fragmentShaderSource =
 
 void framebuffer_size_callback(GLFWwindow* window __attribute__((unused)), int width, int height) {
     glViewport(0, 0, width, height);
-
 }
 
 int main() {
@@ -53,11 +62,6 @@ int main() {
 
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     GLuint vertexShaderId;
     vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
@@ -99,21 +103,35 @@ int main() {
     glDeleteShader(vertexShaderId);
     glDeleteShader(fragmentShaderId);
 
+    Shape rect({
+        Point(-0.5, 0.5, 0, Cartesian{}),
+        Point(-0.5, -0.5, 0, Cartesian{}),
+        Point(0.5, -0.5, 0, Cartesian{}),
+        Point(0.5, 0.5, 0, Cartesian{}),
+        Point(0.5, 0.7, 0, Cartesian{}),
+        });
     GLuint VAOid;
     glGenVertexArrays(1, &VAOid);
     glBindVertexArray(VAOid);
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_COPY);
+    glBufferData(GL_ARRAY_BUFFER, rect.getVertices().size() * sizeof(Point), rect.getVertices().data(), GL_DYNAMIC_COPY);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    GLuint EBOid;
+    glGenBuffers(1, &EBOid);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOid);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, rect.getIndices().size() * sizeof(unsigned int), rect.getIndices().data(), GL_STATIC_DRAW);
 
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-        glBindVertexArray(VAOid);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOid);
+        glDrawElements(GL_TRIANGLES, 3*(rect.getVertices().size() - 2), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
