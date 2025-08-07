@@ -8,35 +8,6 @@
 
 using std::string;
 
-float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.5f,  0.5f, 0.0f,
-    -0.5f,  0.5f, 0.0f
-};
-
-unsigned int indices[] = {
-    0, 1, 2,
-    2, 3, 0,
-};
-
-const char *vertexShaderSource =
-"#version 460 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-const char *fragmentShaderSource =
-"#version 460 core\n"
-"out vec4 FragColor;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n";
-
 void framebuffer_size_callback(GLFWwindow* window __attribute__((unused)), int width, int height) {
     glViewport(0, 0, width, height);
 }
@@ -51,13 +22,12 @@ int main() {
     GLFWwindow* window = glfwCreateWindow(800, 600, "Minimal OpenGL", nullptr, nullptr);
     if (!window) {
         glfwTerminate();
-        return -1;
+        throw std::runtime_error("Failed to open window");
     }
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD\n";
-        return -1;
+        throw std::runtime_error("Failed to initialize GLAD");
     }
 
     glViewport(0, 0, 800, 600);
@@ -103,27 +73,28 @@ int main() {
     glDeleteShader(vertexShaderId);
     glDeleteShader(fragmentShaderId);
 
-    Shape rect({
-        Point(-0.5, 0.5, 0, Cartesian{}),
-        Point(-0.5, -0.5, 0, Cartesian{}),
-        Point(0.5, -0.5, 0, Cartesian{}),
-        Point(0.5, 0.5, 0, Cartesian{}),
-        Point(0.5, 0.7, 0, Cartesian{}),
-        });
+    // Shape rect({
+    //     Point(-0.5, 0.5, 0, Cartesian{}),
+    //     Point(-0.5, -0.5, 0, Cartesian{}),
+    //     Point(0.5, -0.5, 0, Cartesian{}),
+    //     Point(0.5, 0.5, 0, Cartesian{}),
+    //     Point(0.5, 0.7, 0, Cartesian{}),
+    //     });
+    Circle rect(Point(0, 0, 0, Cartesian{}), 0.5, 50);
     GLuint VAOid;
     glGenVertexArrays(1, &VAOid);
     glBindVertexArray(VAOid);
     GLuint VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, rect.getVertices().size() * sizeof(Point), rect.getVertices().data(), GL_DYNAMIC_COPY);
+    glBufferData(GL_ARRAY_BUFFER, rect.vtx_size(), rect.vtx_data(), GL_DYNAMIC_COPY);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     GLuint EBOid;
     glGenBuffers(1, &EBOid);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOid);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, rect.getIndices().size() * sizeof(unsigned int), rect.getIndices().data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, rect.idx_size(), rect.idx_data(), GL_STATIC_DRAW);
 
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -131,7 +102,7 @@ int main() {
 
         glUseProgram(shaderProgram);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOid);
-        glDrawElements(GL_TRIANGLES, 3*(rect.getVertices().size() - 2), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, rect.num_idx(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
