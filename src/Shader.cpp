@@ -1,8 +1,9 @@
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <exception>
 
-#include "shader.hpp"
+#include "Shader.hpp"
 
 std::string loadShaderSource(const std::string& filepath) {
     std::ifstream file(filepath);
@@ -52,5 +53,37 @@ Shader::Shader(const std::string &filepath) {
         char infoLog[512];
         glGetShaderInfoLog(shaderID, 512, nullptr, infoLog);
         throw std::runtime_error("Shader compilation failed: " + std::string(infoLog));
+    }
+}
+
+Shader::~Shader() {
+    if (this->shaderID != 0) {
+        glDeleteShader(this->shaderID);
+        this->shaderID = 0;
+    }
+}
+
+ShaderProgram::ShaderProgram(const std::string &vert_filepath, const std::string &frag_filepath) {
+    // Create shader objects
+    Shader vertexShader(vert_filepath);
+    Shader fragmentShader(frag_filepath);
+
+    // Create shader program
+    this->progID = glCreateProgram();
+
+    // Attach shaders to the program
+    glAttachShader(this->progID, vertexShader);
+    glAttachShader(this->progID, fragmentShader);
+
+    // Link the program
+    glLinkProgram(this->progID);
+
+    // Check for linking errors
+    int success;
+    glGetProgramiv(this->progID, GL_LINK_STATUS, &success);
+    if (!success) {
+        char infoLog[512];
+        glGetProgramInfoLog(this->progID, 512, nullptr, infoLog);
+        throw std::runtime_error("Shader program linking failed: " + std::string(infoLog));
     }
 }

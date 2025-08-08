@@ -11,6 +11,7 @@ add_subdirectory(thirdparty)
 add_executable(first_game
     src/main.cpp
     src/Shape.cpp
+    src/Shader.cpp
 )
 
 # Include paths
