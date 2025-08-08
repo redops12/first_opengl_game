@@ -62,16 +62,21 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOid);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, rect.idx_size(), rect.idx_data(), GL_STATIC_DRAW);
 
+    int vertexColorLocation = glGetUniformLocation(shaderProgram, "globColor");
+    int aLocLocation = glGetUniformLocation(shaderProgram, "aLoc");
+
+    glUseProgram(shaderProgram);
+
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
 
         float timeValue = glfwGetTime();
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "globColor");
+
         glUniform4f(vertexColorLocation, (sin(timeValue) / 2.0f) + 0.5f, sin(timeValue + 2*M_PI/3) / 2.0f + 0.5f, sin(timeValue + 4*M_PI/3) / 2.0f + 0.5f, 1.0f);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOid);
+        glUniform3f(aLocLocation, cos(timeValue)/2.0f, sin(timeValue) / 2.0f, 0.0f);
+
         glDrawElements(GL_TRIANGLES, rect.num_idx(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
