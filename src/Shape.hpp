@@ -15,6 +15,24 @@ class Point {
     }
 };
 
+class ColorPoint : public Point {
+    private:
+    float r, g, b;
+
+    public:
+    ColorPoint(float x, float y, float z, float r, float g, float b, Cartesian);
+    ColorPoint(float radius, float theta, float phi, float r, float g, float b, Spherical);
+};
+
+class TexturePoint : public Point {
+    private:
+    float u, v;
+
+    public:
+    TexturePoint(float x, float y, float z, float u, float v, Cartesian);
+    TexturePoint(float radius, float theta, float phi, float u, float v, Spherical);
+};
+
 class Shape {
     private:
     std::vector<Point> vertices_;
