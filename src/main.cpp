@@ -44,12 +44,12 @@ int main() {
     // Circle circle(Point(0, 0, 0, Cartesian{}), 0.5, 50);
     TexturedShape TexRect(
             {
-            TexturePoint(0.5f, 0.5f, 0.0f, 1.0f, 1.0f, Cartesian{}),
-            TexturePoint(0.5f, -0.5f, 0.0f, 1.0f, 0.0f, Cartesian{}),
+            TexturePoint(0.5f, 0.5f, 0.0f, 0.75f, 0.75f, Cartesian{}),
+            TexturePoint(0.5f, -0.5f, 0.0f, 0.75f, 0.0f, Cartesian{}),
             TexturePoint(-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, Cartesian{}),
-            TexturePoint(-0.5f, 0.5f, 0.0f, 0.0f, 1.0f, Cartesian{}),
+            TexturePoint(-0.5f, 0.5f, 0.0f, 0.0f, 0.75f, Cartesian{}),
             },
-            "/home/rwburke/VideoGames/first_run/resources/dvd-logo-png-19252.png"
+            "/home/rwburke/VideoGames/first_run/resources/dvd.jpg"
             );
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, TexRect.getTextureID());
