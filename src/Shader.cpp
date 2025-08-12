@@ -52,7 +52,7 @@ Shader::Shader(const std::string &filepath) {
     if (!success) {
         char infoLog[512];
         glGetShaderInfoLog(shaderID, 512, nullptr, infoLog);
-        throw std::runtime_error("Shader compilation failed: " + std::string(infoLog));
+        throw std::runtime_error("Shader compilation failed for " + filepath + ": " + std::string(infoLog));
     }
 }
 

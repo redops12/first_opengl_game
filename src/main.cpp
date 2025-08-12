@@ -41,38 +41,53 @@ int main() {
 
     ShaderProgram shaderProgram("/home/rwburke/VideoGames/first_run/shaders/basic.vert", "/home/rwburke/VideoGames/first_run/shaders/basic.frag");
 
-    Circle circle(Point(0, 0, 0, Cartesian{}), 0.5, 50);
+    // Circle circle(Point(0, 0, 0, Cartesian{}), 0.5, 50);
+    TexturedShape TexRect(
+            {
+            TexturePoint(0.5f, 0.5f, 0.0f, 1.0f, 1.0f, Cartesian{}),
+            TexturePoint(0.5f, -0.5f, 0.0f, 1.0f, 0.0f, Cartesian{}),
+            TexturePoint(-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, Cartesian{}),
+            TexturePoint(-0.5f, 0.5f, 0.0f, 0.0f, 1.0f, Cartesian{}),
+            },
+            "/home/rwburke/VideoGames/first_run/resources/dvd-logo-png-19252.png"
+            );
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, TexRect.getTextureID());
     GLuint VAOid;
     glGenVertexArrays(1, &VAOid);
     glBindVertexArray(VAOid);
     GLuint VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, circle.vtx_size(), circle.vtx_data(), GL_DYNAMIC_COPY);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, TexRect.vtx_size(), TexRect.vtx_data(), GL_DYNAMIC_COPY);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TexturePoint), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TexturePoint), (void*)sizeof(Point));
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
 
     GLuint EBOid;
     glGenBuffers(1, &EBOid);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOid);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, circle.idx_size(), circle.idx_data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, TexRect.idx_size(), TexRect.idx_data(), GL_STATIC_DRAW);
 
-    int vertexColorLocation = glGetUniformLocation(shaderProgram, "globColor");
-    int aLocLocation = glGetUniformLocation(shaderProgram, "aLoc");
-
+    // int vertexColorLocation = glGetUniformLocation(shaderProgram, "globColor");
     glUseProgram(shaderProgram);
+
+    int aLocLocation = glGetUniformLocation(shaderProgram, "aLoc");
+    int uTexLocation = glGetUniformLocation(shaderProgram, "uTex");
+    glUniform1i(uTexLocation, 0);
+
 
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-
         float timeValue = glfwGetTime();
 
-        glUniform4f(vertexColorLocation, (sin(timeValue) / 2.0f) + 0.5f, sin(timeValue + 2*M_PI/3) / 2.0f + 0.5f, sin(timeValue + 4*M_PI/3) / 2.0f + 0.5f, 1.0f);
+        // glUniform4f(vertexColorLocation, (sin(timeValue) / 2.0f) + 0.5f, sin(timeValue + 2*M_PI/3) / 2.0f + 0.5f, sin(timeValue + 4*M_PI/3) / 2.0f + 0.5f, 1.0f);
         glUniform3f(aLocLocation, cos(timeValue)/2.0f, sin(timeValue) / 2.0f, 0.0f);
 
-        glDrawElements(GL_TRIANGLES, circle.num_idx(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, TexRect.num_idx(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
