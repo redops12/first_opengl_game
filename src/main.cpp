@@ -17,7 +17,9 @@ void framebuffer_size_callback(GLFWwindow* window __attribute__((unused)), int w
 }
 
 int main() {
-    if (!glfwInit()) return -1;
+    if (!glfwInit()) {
+        throw std::runtime_error("Failed to initialize GLFW");
+    };
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -39,28 +41,21 @@ int main() {
 
     ShaderProgram shaderProgram("/home/rwburke/VideoGames/first_run/shaders/basic.vert", "/home/rwburke/VideoGames/first_run/shaders/basic.frag");
 
-    // Shape rect({
-    //     Point(-0.5, 0.5, 0, Cartesian{}),
-    //     Point(-0.5, -0.5, 0, Cartesian{}),
-    //     Point(0.5, -0.5, 0, Cartesian{}),
-    //     Point(0.5, 0.5, 0, Cartesian{}),
-    //     Point(0.5, 0.7, 0, Cartesian{}),
-    //     });
-    Circle rect(Point(0, 0, 0, Cartesian{}), 0.5, 50);
+    Circle circle(Point(0, 0, 0, Cartesian{}), 0.5, 50);
     GLuint VAOid;
     glGenVertexArrays(1, &VAOid);
     glBindVertexArray(VAOid);
     GLuint VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, rect.vtx_size(), rect.vtx_data(), GL_DYNAMIC_COPY);
+    glBufferData(GL_ARRAY_BUFFER, circle.vtx_size(), circle.vtx_data(), GL_DYNAMIC_COPY);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     GLuint EBOid;
     glGenBuffers(1, &EBOid);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOid);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, rect.idx_size(), rect.idx_data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, circle.idx_size(), circle.idx_data(), GL_STATIC_DRAW);
 
     int vertexColorLocation = glGetUniformLocation(shaderProgram, "globColor");
     int aLocLocation = glGetUniformLocation(shaderProgram, "aLoc");
@@ -77,7 +72,7 @@ int main() {
         glUniform4f(vertexColorLocation, (sin(timeValue) / 2.0f) + 0.5f, sin(timeValue + 2*M_PI/3) / 2.0f + 0.5f, sin(timeValue + 4*M_PI/3) / 2.0f + 0.5f, 1.0f);
         glUniform3f(aLocLocation, cos(timeValue)/2.0f, sin(timeValue) / 2.0f, 0.0f);
 
-        glDrawElements(GL_TRIANGLES, rect.num_idx(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, circle.num_idx(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
