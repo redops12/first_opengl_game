@@ -1,7 +1,10 @@
+#pragma once
+
 #include <vector>
 #include <string>
 
 #include <GLFW/glfw3.h>
+#include "image_loader.hpp"
 
 struct Cartesian{};
 struct Spherical{};
@@ -34,6 +37,15 @@ class TexturePoint : public Point {
     public:
     TexturePoint(float x, float y, float z, float u, float v, Cartesian);
     TexturePoint(float radius, float theta, float phi, float u, float v, Spherical);
+};
+
+class ColorTexturePoint : public Point {
+    private:
+    float r, g, b, u, v;
+
+    public:
+    ColorTexturePoint(float x, float y, float z, float r, float g, float b, float u, float v, Cartesian);
+    ColorTexturePoint(float radius, float theta, float phi, float r, float g, float b, float u, float v, Spherical);
 };
 
 template <typename T>
@@ -73,18 +85,4 @@ class Circle : public Shape<Point> {
      * @param[radius] radius As a float between 0 and 1
      */
     Circle(Point center, float radius, unsigned int count = 360);
-};
-
-class TexturedShape : public Shape<TexturePoint> {
-    private:
-        GLuint textureID;
-    public:
-        GLuint getTextureID() const { return textureID; }
-
-        /**
-         * @brief Construct a textured shape from a list of vertices
-         *
-         * @param[in] vertices List of vertices in order
-         */
-        TexturedShape(const std::vector<TexturePoint> &vertices, const std::string& pathname, bool flip = true);
 };

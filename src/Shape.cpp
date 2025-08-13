@@ -1,8 +1,6 @@
 #include <math.h>
 #include <stdexcept>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -14,6 +12,8 @@ ColorPoint::ColorPoint(float x, float y, float z, float r, float g, float b, Car
 ColorPoint::ColorPoint(float radius, float theta, float phi, float r, float g, float b, Spherical): Point(radius, theta, phi, Spherical{}), r(r), g(g), b(b) {}
 TexturePoint::TexturePoint(float x, float y, float z, float u, float v, Cartesian): Point(x, y, z, Cartesian{}), u(u), v(v) {}
 TexturePoint::TexturePoint(float radius, float theta, float phi, float u, float v, Spherical): Point(radius, theta, phi, Spherical{}), u(u), v(v) {}
+ColorTexturePoint::ColorTexturePoint(float x, float y, float z, float r, float g, float b, float u, float v, Cartesian) : Point(x, y, z, Cartesian{}), r(r), g(g), b(b), u(u), v(v) {}
+ColorTexturePoint::ColorTexturePoint(float radius, float theta, float phi, float r, float g, float b, float u, float v, Spherical) : Point(radius, theta, phi, Spherical{}), r(r), g(g), b(b), u(u), v(v) {}
 
 std::vector<Point> generate_circle(Point center, float radius, unsigned int count) {
     std::vector<Point> vertices;
@@ -24,40 +24,3 @@ std::vector<Point> generate_circle(Point center, float radius, unsigned int coun
 }
 
 Circle::Circle(Point center, float radius, unsigned int count): Shape(generate_circle(center, radius, count)) { }
-
-TexturedShape::TexturedShape(const std::vector<TexturePoint> &vertices, const std::string& pathname, bool flip): Shape<TexturePoint>(vertices) {
-    glGenTextures(1, &this->textureID);
-    glBindTexture(GL_TEXTURE_2D, this->textureID);
-
-    // set the texture wrapping parameters
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (flip) {
-        stbi_set_flip_vertically_on_load(true);
-    } else {
-        stbi_set_flip_vertically_on_load(false);
-    }
-
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load(pathname.c_str(), &width, &height, &nrChannels, 0);
-    if (!data) {
-        throw std::runtime_error("Failed to load texture image: " + pathname);
-    }
-    GLenum format;
-    if (nrChannels == 1)
-        format = GL_RED;
-    else if (nrChannels == 3)
-        format = GL_RGB;
-    else if (nrChannels == 4)
-        format = GL_RGBA;
-    else
-        throw std::runtime_error("Unsupported channel count");
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
-}
