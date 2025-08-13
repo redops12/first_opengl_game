@@ -81,7 +81,6 @@ int main() {
 
     glUseProgram(shaderProgram);
 
-    int aLocLocation = glGetUniformLocation(shaderProgram, "aLoc");
     int uTexLocation = glGetUniformLocation(shaderProgram, "uTex");
     // int vertexColorLocation = glGetUniformLocation(shaderProgram, "globColor");
     glUniform1i(uTexLocation, 0);
@@ -122,7 +121,8 @@ int main() {
         mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         mat4 view          = glm::mat4(1.0f);
         mat4 projection    = glm::mat4(1.0f);
-        model = glm::rotate(model, static_cast<float>(glfwGetTime()) * glm::radians(-80.0f), glm::vec3(1.0f, 0.5f, 0.0f));
+        model = translate(model, pos);
+        model = rotate(model, static_cast<float>(glfwGetTime()) * glm::radians(-80.0f), glm::vec3(1.0f, 0.5f, 0.0f));
         view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
         projection = perspective(radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
         // retrieve the matrix uniform locations
@@ -132,7 +132,6 @@ int main() {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
         glUniformMatrix4fv(perspectiveLoc, 1, GL_FALSE, value_ptr(projection));
-        glUniform3f(aLocLocation, pos.x, pos.y, pos.z);
 
         glDrawElements(GL_TRIANGLES, TexRect.num_idx(), GL_UNSIGNED_INT, 0);
 

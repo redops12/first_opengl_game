@@ -3,8 +3,6 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aColor;
 layout (location = 2) in vec2 aTexCord;
 
-uniform vec3 aLoc;
-
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
@@ -14,8 +12,7 @@ out vec2 TexCord;
 
 void main()
 {
-    vec4 globCord = (model * vec4(aPos, 1.0)) + vec4(aLoc, 0.0);
-    gl_Position = projection * view * globCord;
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
     Color = aColor;
     TexCord = aTexCord;
 }
