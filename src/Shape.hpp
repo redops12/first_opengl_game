@@ -98,9 +98,14 @@ public:
     const glm::vec3& getNormal() const { return normal; }
     const glm::vec2& getUV() const { return uv; }
     bool operator==(const NormalTexturePoint& other) const {
-        return pos == other.pos;
-        return normal == other.normal;
-        return uv == other.uv;
+        return pos.x == other.pos.x;
+        return pos.y == other.pos.y;
+        return pos.z == other.pos.z;
+        return normal.x == other.normal.x;
+        return normal.y == other.normal.y;
+        return normal.z == other.normal.z;
+        return uv.x == other.uv.x;
+        return uv.y == other.uv.y;
     }
 
     friend class NormalTexturePointHasher;
