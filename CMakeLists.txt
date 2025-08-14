@@ -29,6 +29,7 @@ add_executable(first_game
     src/Shape.cpp
     src/Shader.cpp
     src/image_loader.cpp
+    src/obj_loader.cpp
 )
 
 # Include paths

@@ -15,6 +15,7 @@
 #include "Shape.hpp"
 #include "Shader.hpp"
 #include "image_loader.hpp"
+#include "obj_loader.hpp"
 
 using namespace std;
 using namespace glm;
@@ -48,16 +49,18 @@ int main() {
 
     ShaderProgram shaderProgram("/home/rwburke/VideoGames/first_run/shaders/basic.vert", "/home/rwburke/VideoGames/first_run/shaders/basic.frag");
 
-    Shape<ColorTexturePoint> TexRect(
-            {                 // Vertices           Colors                  Texture
-            ColorTexturePoint(0.1f,  0.1f,  0.0f,   0.870, 0.490, 0.184,    1.0f, 1.0f, Cartesian{}),
-            ColorTexturePoint(0.1f,  -0.1f, 0.0f,   0.870, 0.490, 0.184,    1.0f, 0.0f, Cartesian{}),
-            ColorTexturePoint(-0.1f, -0.1f, 0.0f,   0.513, 0.070, 0.721,    0.0f, 0.0f, Cartesian{}),
-            ColorTexturePoint(-0.1f, 0.1f,  0.0f,   0.513, 0.070, 0.721,    0.0f, 1.0f, Cartesian{}),
-            });
+    // Shape<ColorTexturePoint> TexRect(
+    //         {                 // Vertices           Colors                  Texture
+    //         ColorTexturePoint(0.1f,  0.1f,  0.0f,   0.870, 0.490, 0.184,    1.0f, 1.0f, Cartesian{}),
+    //         ColorTexturePoint(0.1f,  -0.1f, 0.0f,   0.870, 0.490, 0.184,    1.0f, 0.0f, Cartesian{}),
+    //         ColorTexturePoint(-0.1f, -0.1f, 0.0f,   0.513, 0.070, 0.721,    0.0f, 0.0f, Cartesian{}),
+    //         ColorTexturePoint(-0.1f, 0.1f,  0.0f,   0.513, 0.070, 0.721,    0.0f, 1.0f, Cartesian{}),
+    //         });
+    ObjectLoader TexRect("/home/rwburke/VideoGames/first_run/blender/exports/DVDvideo.obj");
     ImageLoader img("/home/rwburke/VideoGames/first_run/resources/dvd-logo-png-19252.png", true);
 
     glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     GLuint VAOid;
     glGenVertexArrays(1, &VAOid);
@@ -90,7 +93,7 @@ int main() {
     float prev_time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         float new_time = glfwGetTime();
         float delta = glfwGetTime() - prev_time;
@@ -123,7 +126,7 @@ int main() {
         mat4 projection    = glm::mat4(1.0f);
         model = translate(model, pos);
         model = rotate(model, static_cast<float>(glfwGetTime()) * glm::radians(-80.0f), glm::vec3(1.0f, 0.5f, 0.0f));
-        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -25.0f));
         projection = perspective(radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");

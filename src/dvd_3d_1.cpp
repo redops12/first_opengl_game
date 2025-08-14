@@ -15,6 +15,7 @@
 #include "Shape.hpp"
 #include "Shader.hpp"
 #include "image_loader.hpp"
+#include "obj_loader.hpp"
 
 using namespace std;
 using namespace glm;
