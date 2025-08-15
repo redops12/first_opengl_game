@@ -4,53 +4,135 @@
 #include <string>
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include "image_loader.hpp"
 
 struct Cartesian{};
 struct Spherical{};
 
 class Point {
-    private:
-    float x, y, z;
+protected:
+    glm::vec3 pos;
 
-    public:
-    Point(float x, float y, float z, Cartesian);
-    Point(float r, float theta, float phi, Spherical);
-    inline friend Point operator+(const Point &lhs, const Point &rhs) {
-        return Point(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, Cartesian{});
+public:
+    Point(glm::vec3 pos): pos(pos) {}
+    Point(float x, float y, float z, Cartesian) : pos(x, y, z) {}
+    Point(float r, float theta, float phi, Spherical) : pos(r * sin(phi) * cos(theta), r * sin(phi) * sin(theta), r * cos(phi)) {}
+
+    const glm::vec3& getPosition() const { return pos; }
+
+    friend Point operator+(const Point& lhs, const Point& rhs) {
+        return Point(lhs.pos + rhs.pos);
+    }
+
+    bool operator==(const Point& other) const {
+        return pos == other.pos;
     }
 };
 
+// ColorPoint
 class ColorPoint : public Point {
-    private:
-    float r, g, b;
+private:
+    glm::vec3 color; // r,g,b
 
-    public:
-    ColorPoint(float x, float y, float z, float r, float g, float b, Cartesian);
-    ColorPoint(float radius, float theta, float phi, float r, float g, float b, Spherical);
+public:
+    ColorPoint(glm::vec3 pos, glm::vec3 color): Point(pos), color(color) {}
+    ColorPoint(float x, float y, float z, float r, float g, float b, Cartesian) : Point(x, y, z, Cartesian{}), color(r, g, b) {}
+    ColorPoint(float radius, float theta, float phi, float r, float g, float b, Spherical) : Point(radius, theta, phi, Spherical{}), color(r, g, b) {}
+
+    const glm::vec3& getColor() const { return color; }
+    bool operator==(const ColorPoint& other) const {
+        return pos == other.pos;
+        return color == other.color;
+    }
 };
 
+// TexturePoint
 class TexturePoint : public Point {
-    private:
-    float u, v;
+private:
+    glm::vec2 uv; // u,v
 
-    public:
-    TexturePoint(float x, float y, float z, float u, float v, Cartesian);
-    TexturePoint(float radius, float theta, float phi, float u, float v, Spherical);
+public:
+    TexturePoint(glm::vec3 pos, glm::vec2 uv): Point(pos), uv(uv) {}
+    TexturePoint(float x, float y, float z, float u, float v, Cartesian) : Point(x, y, z, Cartesian{}), uv(u, v) {}
+    TexturePoint(float radius, float theta, float phi, float u, float v, Spherical) : Point(radius, theta, phi, Spherical{}), uv(u, v) {}
+
+    const glm::vec2& getUV() const { return uv; }
+    bool operator==(const TexturePoint& other) const {
+        return pos == other.pos;
+        return uv == other.uv;
+    }
 };
 
+// ColorTexturePoint
 class ColorTexturePoint : public Point {
-    private:
-    float r, g, b, u, v;
+private:
+    glm::vec3 color;
+    glm::vec2 uv;
 
-    public:
-    ColorTexturePoint(float x, float y, float z, float r, float g, float b, float u, float v, Cartesian);
-    ColorTexturePoint(float radius, float theta, float phi, float r, float g, float b, float u, float v, Spherical);
+public:
+    ColorTexturePoint(glm::vec3 pos, glm::vec3 color, glm::vec2 uv): Point(pos), color(color), uv(uv) {}
+    ColorTexturePoint(float x, float y, float z, float r, float g, float b, float u, float v, Cartesian) : Point(x, y, z, Cartesian{}), color(r, g, b), uv(u, v) {}
+    ColorTexturePoint(float radius, float theta, float phi, float r, float g, float b, float u, float v, Spherical) : Point(radius, theta, phi, Spherical{}), color(r, g, b), uv(u, v) {}
+
+    const glm::vec3& getColor() const { return color; }
+    const glm::vec2& getUV() const { return uv; }
+    bool operator==(const ColorTexturePoint& other) const {
+        return pos == other.pos;
+        return color == other.color;
+        return uv == other.uv;
+    }
+};
+
+// NormalTexturePoint
+class NormalTexturePoint : public Point {
+private:
+    glm::vec3 normal;
+    glm::vec2 uv;
+
+public:
+    NormalTexturePoint(glm::vec3 pos, glm::vec3 normal, glm::vec2 uv): Point(pos), normal(normal), uv(uv) {}
+    NormalTexturePoint(float x, float y, float z, float nx, float ny, float nz, float u, float v, Cartesian) : Point(x, y, z, Cartesian{}), normal(nx, ny, nz), uv(u, v) {}
+    NormalTexturePoint(float radius, float theta, float phi, float nx, float ny, float nz, float u, float v, Spherical) : Point(radius, theta, phi, Spherical{}), normal(nx, ny, nz), uv(u, v) {}
+
+    const glm::vec3& getNormal() const { return normal; }
+    const glm::vec2& getUV() const { return uv; }
+    bool operator==(const NormalTexturePoint& other) const {
+        return pos.x == other.pos.x;
+        return pos.y == other.pos.y;
+        return pos.z == other.pos.z;
+        return normal.x == other.normal.x;
+        return normal.y == other.normal.y;
+        return normal.z == other.normal.z;
+        return uv.x == other.uv.x;
+        return uv.y == other.uv.y;
+    }
+
+    friend class NormalTexturePointHasher;
+};
+
+// Hasher for NormalTexturePoint
+class NormalTexturePointHasher {
+public:
+    size_t operator()(const NormalTexturePoint& v) const noexcept {
+        auto h = [](float f) { return std::hash<uint32_t>{}(*reinterpret_cast<const uint32_t*>(&f)); };
+        size_t seed = 0;
+        auto mix = [&](size_t x) { seed ^= x + 0x9e3779b97f4a7c15ULL + (seed<<6) + (seed>>2); };
+
+        const glm::vec3 p = v.getPosition();
+        const glm::vec3 n = v.getNormal();
+        const glm::vec2 uv = v.getUV();
+
+        mix(h(p.x)); mix(h(p.y)); mix(h(p.z));
+        mix(h(n.x)); mix(h(n.y)); mix(h(n.z));
+        mix(h(uv.x)); mix(h(uv.y));
+        return seed;
+    }
 };
 
 template <typename T>
 class Shape {
-    private:
+    protected:
     std::vector<T> vertices_;
     std::vector<unsigned int> indices_;
 
@@ -73,6 +155,16 @@ class Shape {
             indices_.push_back(i+1);
         }
     }
+    Shape() {}
+
+    /**
+     * @brief Instantiate any object from list of vertices and indices
+     *
+     * @param[in] vertices List of vertices
+     * @param[in] indices List of indices
+     */
+    Shape(const std::vector<T> &vertices, const std::vector<unsigned int> &indices)
+        : vertices_(vertices), indices_(indices) {}
 };
 
 std::vector<Point> generate_circle(Point center, float radius, unsigned int count);
