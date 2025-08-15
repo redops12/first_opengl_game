@@ -16,12 +16,18 @@
 #include "Shader.hpp"
 #include "image_loader.hpp"
 #include "obj_loader.hpp"
+#include "Player.hpp"
 
 using namespace std;
 using namespace glm;
 
 void framebuffer_size_callback(GLFWwindow* window __attribute__((unused)), int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+Player player(glm::vec3(0.0f, 0.0f, -100.0f), 0.0f, 0.0f);
+void mouseMoveCallback(__attribute__((unused)) GLFWwindow*  window, double xpos, double ypos) {
+    player.mouseCallback(xpos, ypos);
 }
 
 int main() {
@@ -43,6 +49,8 @@ int main() {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         throw std::runtime_error("Failed to initialize GLAD");
     }
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouseMoveCallback);
 
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -58,6 +66,7 @@ int main() {
     //         });
     ObjectLoader TexRect("/home/rwburke/VideoGames/first_run/blender/exports/DVDvideo.obj");
     ImageLoader img("/home/rwburke/VideoGames/first_run/resources/dvd-logo-png-19252.png", true);
+
 
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
@@ -88,8 +97,6 @@ int main() {
     // int vertexColorLocation = glGetUniformLocation(shaderProgram, "globColor");
     glUniform1i(uTexLocation, 0);
 
-    vec3 velocity(0.55f, 0.35f, 0.0f);
-    vec3 pos(0.0f, 0.0f, 0.0f);
     float prev_time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -99,44 +106,40 @@ int main() {
         float delta = glfwGetTime() - prev_time;
         prev_time = new_time;
 
-        // glUniform4f(vertexColorLocation, (sin(timeValue) / 2.0f) + 0.5f, sin(timeValue + 2*M_PI/3) / 2.0f + 0.5f, sin(timeValue + 4*M_PI/3) / 2.0f + 0.5f, 1.0f);
-        // glUniform3f(aLocLocation, cos(timeValue)/2.0f, sin(timeValue) / 2.0f, 0.0f);
-        pos += velocity * delta;
-        if (pos.x > 2.0) {
-            pos.x = 2.0f;
-            velocity.x = -velocity.x;
-        }
-        if (pos.x < -2.0) {
-            pos.x = -2.0f;
-            velocity.x = -velocity.x;
-        }
-
-        if (pos.y > 2.0) {
-            pos.y = 2.0f;
-            velocity.y = -velocity.y;
-        }
-        if (pos.y < -2.0) {
-            pos.y = -2.0f;
-            velocity.y = -velocity.y;
-        }
+        player.processInput(window);
+        player.update(delta);
 
         // create transformations
-        mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
         mat4 view          = glm::mat4(1.0f);
         mat4 projection    = glm::mat4(1.0f);
-        model = translate(model, pos);
-        model = rotate(model, static_cast<float>(glfwGetTime()) * glm::radians(-80.0f), glm::vec3(1.0f, 0.5f, 0.0f));
-        view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -25.0f));
-        projection = perspective(radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        view  = player.getView();
+        projection = perspective(radians(45.0f), 800.0f / 600.0f, 0.1f, 200.0f);
         // retrieve the matrix uniform locations
-        unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
         unsigned int viewLoc  = glGetUniformLocation(shaderProgram, "view");
         unsigned int perspectiveLoc  = glGetUniformLocation(shaderProgram, "projection");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, value_ptr(view));
         glUniformMatrix4fv(perspectiveLoc, 1, GL_FALSE, value_ptr(projection));
 
-        glDrawElements(GL_TRIANGLES, TexRect.num_idx(), GL_UNSIGNED_INT, 0);
+        vector<glm::vec3> positions = {
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(10.0f, 10.0f, 10.0f),
+            glm::vec3(-10.0f, -10.0f, -10.0f),
+            glm::vec3(20.0f, 10.0f, 10.0f),
+            glm::vec3(-20.0f, -10.0f, -10.0f),
+            glm::vec3(20.0f, 10.0f, 10.0f),
+            glm::vec3(-20.0f, -10.0f, -10.0f),
+            glm::vec3(10.0f, 20.0f, 10.0f),
+            glm::vec3(-10.0f, -20.0f, -10.0f),
+            glm::vec3(-10.0f, -10.0f, -20.0f),
+        };
+        for (int i = 0; i < 10; i++) {
+            mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+            model = translate(model, positions[i]);
+            model = rotate(model, static_cast<float>(glfwGetTime()) * glm::radians(-80.0f), glm::vec3(sin(i+1), cos(3*i+1), sin(i*5+1)));
+            unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, value_ptr(model));
+            glDrawElements(GL_TRIANGLES, TexRect.num_idx(), GL_UNSIGNED_INT, 0);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
