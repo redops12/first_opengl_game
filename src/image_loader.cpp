@@ -17,6 +17,10 @@ ImageLoader::ImageLoader(const char *filename, bool flipY) {
         stbi_set_flip_vertically_on_load(false);
     }
 
+    if (!filename) {
+        throw std::invalid_argument("Filename cannot be null");
+    }
+
     // Force RGBA so every pixel is 4 bytes
     unsigned char *data = stbi_load(filename, &width, &height, &channels, 4);
     if (!data) {

@@ -12,6 +12,8 @@ void Player::recalcLook() {
             cos(glm::radians(this->pitch)) * cos(glm::radians(this->yaw))
             );
     this->look = glm::normalize(this->look);
+    this->right = glm::normalize(glm::cross(this->look, this->worldUp));
+    this->up = glm::normalize(glm::cross(this->right, this->look));
 }
 
 Player::Player(glm::vec3 pos, double pitch, double yaw):
@@ -30,24 +32,6 @@ glm::mat3 projectxz = {
     0.0f, 0.0f, 1.0f,
 };
 
-glm::mat3 rot90 = {
-    0.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 0.0f,
-    -1.0f, 0.0f, 0.0f,
-};
-
-glm::mat3 rot180 = {
-    -1.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, -1.0f,
-};
-
-glm::mat3 rot270 = {
-    0.0f, 0.0f, -1.0f,
-    0.0f, 1.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-};
-
 void Player::processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
@@ -60,13 +44,13 @@ void Player::processInput(GLFWwindow* window) {
         new_velocity += projectxz * look;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        new_velocity += rot270 * projectxz * look;
+        new_velocity += projectxz * glm::cross(up, look);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        new_velocity += rot180 * projectxz * look;
+        new_velocity -= projectxz * look;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        new_velocity += rot90 * projectxz * look;
+        new_velocity -= projectxz * glm::cross(up, look);
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
         new_velocity += glm::vec3(0.0f, 1.0f, 0.0f);
@@ -74,7 +58,7 @@ void Player::processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         new_velocity += glm::vec3(0.0f, -1.0f, 0.0f);
     }
-    this->velocity = (new_velocity == glm::vec3(0.0f)) ? velocity : 30.0f * glm::normalize(new_velocity);
+    this->velocity = (new_velocity == glm::vec3(0.0f)) ? velocity : 10.0f * glm::normalize(new_velocity);
 }
 
 void Player::mouseCallback(double xpos, double ypos) {
