@@ -31,10 +31,11 @@ int main() {
     Window window;
 
     ShaderProgram shaderProgram("/home/rwburke/VideoGames/first_run/shaders/basic.vert", "/home/rwburke/VideoGames/first_run/shaders/basic.frag");
-    Model bookshelf(shaderProgram, "/home/rwburke/VideoGames/shared_resources/blender/exports/cube_glb/cube.glb");
-    Model katana(shaderProgram, "/home/rwburke/VideoGames/shared_resources/resources/dragon_katana/source/dragon_katana_oni_koroshi.glb");
-    Model light(shaderProgram, "/home/rwburke/VideoGames/shared_resources/resources/light/sci-fi_tripod_light.glb");
-    Model room(shaderProgram, "/home/rwburke/VideoGames/shared_resources/blender/exports/room/room.glb");
+    Model bookshelf(shaderProgram, "/home/rwburke/VideoGames/shared_resources/blender/exports/cube_glb/cube.glb", 0.3);
+    Model katana(shaderProgram, "/home/rwburke/VideoGames/shared_resources/resources/dragon_katana/source/dragon_katana_oni_koroshi.glb", 1.0);
+    Model light(shaderProgram, "/home/rwburke/VideoGames/shared_resources/resources/light/sci-fi_tripod_light.glb", 0.8);
+    Model room(shaderProgram, "/home/rwburke/VideoGames/shared_resources/blender/exports/room/room.glb", 0.0);
+    Model table(shaderProgram, "/home/rwburke/VideoGames/shared_resources/resources/pool_table/pool_table.glb", 0.0);
 
     glfwSetCursorPosCallback(window, mouseMoveCallback);
 
@@ -60,38 +61,26 @@ int main() {
         shaderProgram.set("projection", player.getProjection(window.getRatio()));
         shaderProgram.set("cameraPos", player.getPosition());
 
-        static const vector<glm::vec3> positions = {
-            glm::vec3(0.0f, 0.0f, 0.0f),
-        };
-        for (size_t i = 0; i < positions.size(); i++) {
-            mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            model = translate(model, positions[i]);
+        mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        model = translate(model, glm::vec3(0.0f, 0.0f, -2.5f));
+        bookshelf.Draw(model);
 
-            bookshelf.Draw(model);
-        }
-        static const vector<glm::vec3> positions2 = {
-            glm::vec3(-2.0f, -1.0f, -1.0f),
-        };
-        for (size_t i = 0; i < positions2.size(); ++i) {
-            mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            model = translate(model, positions2[i]);
-            model = rotate(model, static_cast<float>(glfwGetTime()) * glm::radians(-80.0f), glm::vec3(sin(i+1), cos(3*i+1), sin(i*5+1)));
-
-            katana.Draw(model);
-        }
+        model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        model = translate(model, glm::vec3(-2.5f, 1.5f, 0.0f));
+        model = rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        katana.Draw(model);
 
         room.Draw(glm::mat4(1.0f));
+        table.Draw(glm::mat4(1.0f));
 
-        for (size_t i = 0; i < positions2.size(); ++i) {
-            vec3 lightPos = glm::vec3(-2.0, 0.0, -2.0);
-            mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            model = translate(model, lightPos);
-            light.Draw(model);
-            shaderProgram.set("light.position", lightPos + vec3(0.0, 1.5, 0.0));
-            shaderProgram.set("light.ambient", ambient_colors[HALOGEN]);
-            shaderProgram.set("light.diffuse", ambient_colors[HALOGEN]);
-            shaderProgram.set("light.specular", ambient_colors[HALOGEN]);
-        }
+        vec3 lightPos = glm::vec3(0.0, 2.0, 0.0);
+        model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+        model = translate(model, lightPos);
+        light.Draw(model);
+        shaderProgram.set("light.position", lightPos + vec3(0.0, 1.5, 0.0));
+        shaderProgram.set("light.ambient", 1.3f * ambient_colors[CANDLE]);
+        shaderProgram.set("light.diffuse", 10.0f * ambient_colors[CANDLE]);
+        shaderProgram.set("light.specular", 0.1f * ambient_colors[CANDLE]);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

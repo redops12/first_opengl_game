@@ -51,11 +51,12 @@ class Mesh {
 
 class Model {
     public:
-        Model(ShaderProgram &shader, const std::string &path): shader(shader) {
+        Model(ShaderProgram &shader, const std::string &path, float roughness): shader(shader), roughness(roughness) {
             loadModel(path);
         }
 
         void Draw(glm::mat4 model) const {
+            shader.set("roughness", roughness);
             for (const Mesh &mesh : meshes) {
                 mesh.Draw(model);
             }
@@ -66,6 +67,7 @@ class Model {
         std::vector<Mesh> meshes;
         std::string directory;
         std::unordered_map<std::string, Texture> loaded_textures;
+        float roughness;
 
         void loadModel(const std::string &path);
         void processNode(aiNode *node, const aiScene *scene, glm::mat4 parentTransform);
